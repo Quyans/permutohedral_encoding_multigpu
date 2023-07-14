@@ -55,7 +55,8 @@ struct EncodingFixedParams{
     torch::Tensor compute_scale_factor_tensor(const std::vector<float> sigmas_list, const int pos_dim){
         int nr_resolutions=sigmas_list.size();
 
-        torch::Tensor scale_factor_tensor=torch::zeros({ nr_resolutions, pos_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA, 2)  );
+        // torch::Tensor scale_factor_tensor=torch::zeros({ nr_resolutions, pos_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA, 2)  );
+        torch::Tensor scale_factor_tensor=torch::zeros({ nr_resolutions, pos_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA)  );
         double invStdDev = 1.0;
         for(int res_idx=0; res_idx<nr_resolutions; res_idx++){
             for (int i = 0; i < pos_dim; i++) {

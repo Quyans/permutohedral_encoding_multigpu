@@ -22,7 +22,7 @@ scale_list=np.geomspace(coarsest_scale, finest_scale, num=nr_levels)
 #     points=torch.rand(nr_points, 6).cuda()
 
 
-d = 2
+d = 0
 device = torch.device('cuda', d)
 torch.cuda.set_device(d)
     

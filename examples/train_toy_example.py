@@ -5,7 +5,7 @@ import permutohedral_encoding as permuto_enc
 import numpy as np
 
 
-d = 2
+d = 0
 device = torch.device('cuda', d)
 torch.cuda.set_device(d)
 

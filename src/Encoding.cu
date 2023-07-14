@@ -68,7 +68,7 @@ torch::Tensor Encoding<POS_DIM, NR_FEAT_PER_LEVEL>::forward(const EncodingInput&
 
 
     //initialize the output values 
-    Tensor sliced_values_hom_tensor=torch::empty({nr_resolutions+nr_resolutions_extra, val_dim, nr_positions }, torch::dtype(torch::kFloat32).device(torch::kCUDA,  2));
+    Tensor sliced_values_hom_tensor=torch::empty({nr_resolutions+nr_resolutions_extra, val_dim, nr_positions }, torch::dtype(torch::kFloat32).device(torch::kCUDA));
 
     //try again with a monolithic kernel
     const dim3 blocks = { (unsigned int)div_round_up(nr_positions, BLOCK_SIZE), (unsigned int)(nr_resolutions+nr_resolutions_extra), 1 }; //the blocks are executed in order, first the blocks for the first resolution, then the second and so on
@@ -123,22 +123,22 @@ std::tuple<torch::Tensor, torch::Tensor> Encoding<POS_DIM, NR_FEAT_PER_LEVEL>::b
    
     Tensor lattice_values_monolithic_grad; //dL/dLattiveValues
     if (input.m_require_lattice_values_grad){
-        // lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, capacity, val_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
-        lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, val_dim, capacity },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
+        // lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, capacity, val_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
+        lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, val_dim, capacity },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
     }else{
-        lattice_values_monolithic_grad=torch::empty({ 1,1,1 },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
+        lattice_values_monolithic_grad=torch::empty({ 1,1,1 },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
     }
     
 
 
     Tensor positions_grad; //dL/dPos
     if (input.m_require_positions_grad){
-        // positions_grad=torch::empty({ nr_resolutions, nr_positions, pos_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
-        // positions_grad=torch::zeros({ nr_positions, pos_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
-        positions_grad=torch::zeros({ pos_dim, nr_positions },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
+        // positions_grad=torch::empty({ nr_resolutions, nr_positions, pos_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
+        // positions_grad=torch::zeros({ nr_positions, pos_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
+        positions_grad=torch::zeros({ pos_dim, nr_positions },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
     }else{
-        // positions_grad=torch::empty({ 1,1,1 },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
-        positions_grad=torch::empty({ 1,1 },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
+        // positions_grad=torch::empty({ 1,1,1 },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
+        positions_grad=torch::empty({ 1,1 },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
     }
 
 
@@ -149,7 +149,7 @@ std::tuple<torch::Tensor, torch::Tensor> Encoding<POS_DIM, NR_FEAT_PER_LEVEL>::b
 
     // torch::cuda::synchronize();
     // auto t1 = std::chrono::high_resolution_clock::now();
-    //assumes lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, val_dim, capacity },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
+    //assumes lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, val_dim, capacity },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
     backward_gpu<POS_DIM,NR_FEAT_PER_LEVEL><<<blocks, BLOCK_SIZE_BACK, 0, at::cuda::getCurrentCUDAStream()>>>(
         nr_positions,
         capacity, 
@@ -227,10 +227,10 @@ std::tuple<torch::Tensor, torch::Tensor> Encoding<POS_DIM, NR_FEAT_PER_LEVEL>::d
 
     // nr_resolutions x nr_lattice_vertices x nr_lattice_featues
     //dL/dLattiveValues
-    // Tensor lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, capacity, val_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
-    Tensor lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, val_dim, capacity },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
+    // Tensor lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, capacity, val_dim },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
+    Tensor lattice_values_monolithic_grad=torch::zeros({ nr_resolutions, val_dim, capacity },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
 
-    Tensor grad_grad_sliced_values_monolithic = torch::empty({ nr_resolutions+nr_resolutions_extra, val_dim, nr_positions },  torch::dtype(torch::kFloat32).device(torch::kCUDA,  2) );
+    Tensor grad_grad_sliced_values_monolithic = torch::empty({ nr_resolutions+nr_resolutions_extra, val_dim, nr_positions },  torch::dtype(torch::kFloat32).device(torch::kCUDA) );
     
 
     
